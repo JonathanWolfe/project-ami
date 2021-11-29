@@ -20,15 +20,15 @@ Ami lang builds off the syntax of the C family, but with radically different int
 
 ## Influences
 
-[Read the dedicated doc](./ami/influences.md)
+[Read the dedicated doc](./ami-lang/influences.md)
 
 ## Goals & Non-Goals
 
-[Read the dedicated doc](./ami/goals.md)
+[Read the dedicated doc](./ami-lang/goals.md)
 
 ## Syntax
 
-[Read the dedicated doc](./ami/syntax.md)
+[Read the dedicated doc](./ami-lang/syntax.md)
 
 # JuJu Browser
 
