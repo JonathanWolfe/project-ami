@@ -101,6 +101,8 @@ SETTINGS.handleErrors = arguments.handleErrors; // INVALID: constant mutation
 PORT += 100; // INVALID: constant mutation
 ```
 
+Constants can be detected via their readonly property `_IS_CONST` (a boolean);
+
 ## References and Clones
 
 Ami is a Last-Write-Wins lock-free language. Mutating a reference in one thread does not signal to the others that a mutation occured, and subsequent reads will return the new value in all threads.
@@ -111,6 +113,7 @@ Ami is a Last-Write-Wins lock-free language. Mutating a reference in one thread 
     - Referencing a reference is a no-op, returning the inputed reference
     - `ref(T) === ref(ref(T)) // true`
 - `clone(T)` creates a deep-clone of the object
+    - Clones of a constant produce a mutable copy
 - Functions wrap all arguments in `clone(T)` unless the argument is a constant or variable
 
 ## Functions
@@ -192,3 +195,69 @@ debugger.info(eightBit.rollovers); // outputs: 0
 
 
 ## Loops
+
+There are 2 looping constructs in ami: `while` and `for`.
+
+### While Loops
+
+The loop's body will be repeated until the conditional in the parens evaluates to true. Only conditional expressions or values are allowed in the parens, not assignments.
+
+```ts
+var done = false;
+
+while (!done) {
+  debugger.info('looped again');
+}
+```
+
+### For Loops
+
+- The loop's body will be repeated a specific number of times. 
+- For loops over non-intergers cause a new reference to be created with the provided name. 
+- When given a collection, the loop will operate in index order (eg: 0,1,2,3...)
+- When given a record/dictionary, the loop will operate in assignment order
+- You cannot loop over decimal numbers
+- Custom types will need to expose the methods `.getNextCollectionItem()` or `.getNextRecordEntry()` to be interoperable with for loops
+
+```ts
+// Over collection
+var names: Collection<String> = ['John', 'Jacob'];
+
+for (var item, index of names) {
+  debugger.info("item: {{ item }}, index: {{ index }}");
+}
+
+// Over range (inclusive)
+for (var n of 1..10) {
+  debugger.info("n = {{ n }}");
+}
+
+// Over records
+var data: Record<Boolean | Int> = { foo: true, bar: 2 };
+
+for (var key, value of data) {
+  debugger.info("key: {{ key }}, value: {{ value }}");
+}
+```
+
+## Collections
+
+Collections in ami are list data structure of undetermined size. Items in the collection can be accessed by the `.atIndex` method. Attempts to access negative indexes will operate from the tail of the collection instead of the head. Attempts to access an unfilled collection slot will throw an error.
+
+```ts
+var items: Collection<Int> = [1, 2, 3];
+
+debugger.info(items.atIndex(1));
+debugger.info(items.atIndex(-1));
+debugger.info(items.atIndex(10)); // ERROR
+
+items.add(4);
+debugger.info(items.atIndex(3));
+debugger.info(items.length); // 4
+
+items.remove(2);
+debugger.info(items.length); // 3
+
+items = items.filter((value, index) => Math.isOdd(value));
+debugger.info(items.length); // 2
+```
